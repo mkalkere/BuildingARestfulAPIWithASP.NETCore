@@ -50,3 +50,39 @@ The outer facing model is conceptually different from the business model and/or 
   - Unsafe
   - Idempotent
   - 204 No Content
+  
+## 4.Updating Resources
+
+### Overview
+
+#### Updating Resources
+- PUT for full updates
+- PATCH for partial updates
+
+#### Upserting
+- Creating a resource with PUT or PATCH
+
+### Summary
+
+#### PUT for full updates
+- It's important to remember that all fields have to be updated with the PUT request. Fields that are not passed in the PUT request should be set to its default values.
+- A successful PUT request warrents 200 Ok or 204 No Content
+- Not safe as it changes the resource
+- It is idempotent
+
+#### PATCH for partial updates
+- The body of the PATCH request is defined by the JSON patch standard. It describes how to pass through a list of operations that have to be applied to the resource. 
+- A successful PATCH request also warrents 200 Ok or 204 No content StatusCode just like PUT.
+- Not Safe
+- Not idempotent
+
+#### Upserting
+- Possible when the consumer of the API is allowed to create the resource URI.
+
+
+
+
+
+
+ 
+
