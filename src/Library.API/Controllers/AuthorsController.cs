@@ -19,6 +19,8 @@ namespace Library.API.Controllers
         {
             _libraryRepository = libraryRepository;
         }
+
+        [HttpGet()]
         public IActionResult GetAuthors()
         {
 
