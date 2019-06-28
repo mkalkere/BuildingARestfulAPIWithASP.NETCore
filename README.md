@@ -166,7 +166,109 @@ There are 3 parts we have to keep in mind:
  
  
  Most restful API's provide additional functionalities like Paging, Filtering and Sorting.
+ 
+ ## 6. Implementing Paging, Filtering and Searching
+ 
+ ### Overview
+ 
+  Common functionalities of API's:
+  
+  - Paging through collection resources to avoid performance implications.
+  - Filtering and searching through collection resources.
+       Even for these kind of functionalities for which the parameters are all passed through query string, its important to keep              RESTful principles in mind, especially when thinking about how we should return metadata.
+
+#### Paging through collection resources
+
+- Paging helps avoid performance issues
+    Collection resources can grow quite large. It's considered best practise to implement paging on each resource collection or atleast     on those resources that can also be created. This is to avoid uninted negative performance when the resource collection grows. 
+
+- Parameters are passed through via the query string
+    Parameters like Paging, Filtering and Sorting are passed through query string. These are not the resources on their own right. These     are paramaters that manipulate the collection that's returned.  
+    Ex:
+    - http://localhost/api/authors?pageNumber=1&pageSize=5
+- Page size should be limited
+- Page by default
+
+   As far as paging is considered the consumers should be able to choose the page number and page size, but that page size can cause        problems as well. if we don't limit this, a consumer can pass through 100,000 as page size, which will still cause performance          issues. So the page size should itself be checked against the specified value to see if it isn't too large, and if no paging            parameters are defined we should only return first page by default. So always page even if it isn't specifically asked for by the        consumer.
+
+#### The Principle of Deferred Execution
+
+- A query variable holds the query commands
+    With deffered execution query variable itself never holds the query results and only stores the query commands. 
+- Execution is deferred until the query is iterated over.
+    Deferred exection meanse that the query execution happens after some time the query the constructed. We can get this behaviour by       working with the IQueryable implementing collections.
+- IQueryable<T> : creates an expression tree    
+   IQueryable<T>  allows us to execute the query against the specific data source and while building upon it creates an expression tree. That's query commands, but query itself isn't sent to the data store until iteration happens. 
     
+- Iteration:
+    Iteration can happen in different ways:
+    - By querying the IQueryable in a loop.
+    - By calling into something like ToList(), ToArry() or ToDictionary() on it. (i.e. converting the expression tree into the actual           list of items)
+    - By calling Singleton Queries.
+       Singleton queries are queries like Count, Average and Count becaue to get the count or first item of the IQuerable, the list has        to be iterated over. But as far as we can avoid that we can build our query for example by adding take and skip statements for          paging and assure it's only executed after that. 
+       
+#### Demo
+
+#### Paging Through Collection Resources(Part 1)
+#### The Principle of Deferred Execution
+#### Demo- Paging Through Collections
+#### Returning Pagination Metadata
+   
+- Should atleast include links to the previous and next pages
+- Can include additional information: total count, amount of pages, ...
+    
+    ```
+    {
+        "results": [{author},{author},...],
+        "metadata": {"previousPage": "/api/...",...}
+    }
+    ```
+    
+###### Pagination Metadata
+Response body nolonger matches the Accept header: this isn't application/json, its a new media type
+    
+Breaks the self descriptive message constraint: the consumer does not know how to interpret the response with content-type               application/json
+
+_When requesting application/json, paging metadata isn't part of the resource representation
+_Use a custom header, like X-Pagination
+
+#### Paging Through Collection Resources (Part 2)
+
+#### Filtering and Searching
+
+Filtering|Searching
+---|---
+ Limits the collection resource, taking into account a predicate. For Ex, We want to return all the authors whose genre matches Fantasy. So we are passing the field name and the value of that field to match to make it part of the collection that will be returned| Limits the collection resource by passing a search predicate. For searching we don't pass the field name that should match, we pass in the value to search for and it's upto the API to decide which field shall be searched for that value. Often it is done with full text search and it is useful for the cases where basic filtering is powerful enough.
+  http://host/api/authors?genre=Fantasy                          | http://host/api/authors?searchQuery=King
+  Filters on fields of resource, not on fields of lower-level layer objects |
+   
+#### Demo - Filtering Collection Resources
+
+#### Demo - Searching Through Collections
+- Full text search component _[Lucene](https://lucenenetdocs.azurewebsites.net/)
+
+### Summary
+
+#### Paging
+    - Very good for performance if done correctly
+    - we should pass pageSize and pageNumber via the query string
+    - Limit the pageSize that is passed in to avoid consumers requesting the page with 100,000 records.
+    - Page by default to avoid performance issues when the page grows
+    - Pagination Metadata belongs in a custom header
+#### Filtering
+    Limits the collection resource taking into account a predicate. This predicate is passed via the query string.
+    - Pass field name and predicate ( _important to remember is to only allowing filtering the fields that are part of the resources and        not of objects related to lower level layers)
+#### Searching
+    - Pass string to search for, API is responsible for the implementation.
+    
+    Searching is related to filtering yet different. It's often used for full text search. We pass a string to search for via the query string and its upto the implementation to decide how matching happens. 
+
+    
+
+
+    
+   
+   
 
 
 
